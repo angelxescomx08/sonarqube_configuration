@@ -1,0 +1,50 @@
+services:
+  # --- ESTE ES EL TRUCO PARA NO HACERLO MANUAL ---
+  init-sysctl:
+    image: busybox:latest
+    container_name: init_sysctl
+    command: sysctl -w vm.max_map_count=262144
+    privileged: true
+    restart: "no"
+
+  sonarqube:
+    image: sonarqube:26.2.0.119303-community
+    container_name: sonarqube_app
+    depends_on:
+      init-sysctl:
+        condition: service_completed_successfully
+      db:
+        condition: service_started
+    ports:
+      - "9000:9000"
+    networks:
+      - sonarnet
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://db:5432/sonar
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonar
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_logs:/opt/sonarqube/logs
+
+  db:
+    image: postgres:18
+    container_name: sonarqube_db
+    networks:
+      - sonarnet
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+      - POSTGRES_DB=sonar
+    volumes:
+      - postgresql_data:/var/lib/postgresql # Ajustado para Postgres 18
+
+networks:
+  sonarnet:
+
+volumes:
+  sonarqube_data:
+  sonarqube_extensions:
+  sonarqube_logs:
+  postgresql_data:
