@@ -22,5 +22,5 @@ sonar.token=TU_TOKEN
 # Execute the following command to scan the project
 
 ```bash
-sonar-scanner -Dsonar.token=myAuthenticationToken -Dsonar.host.url=http://${SONARQUBE_URL}
+sonar-scanner -D sonar.token=token -D sonar.host.url=http://localhost:9000
 ```
